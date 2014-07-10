@@ -6,7 +6,7 @@ OVSB_XTRACE=$(set +o | grep xtrace)
 set +o xtrace
 
 OVS_BRIDGE=${OVS_BRIDGE:-br-int}
-PUBLIC_BRIDGE=${PUBLIC_BRIDGE:-br-ex}
+PUBLIC_BRIDGE=${PUBLIC_BRIDGE-br-ex}
 
 function is_neutron_ovs_base_plugin {
     # Yes, we use OVS.
@@ -27,7 +27,7 @@ function neutron_ovs_base_cleanup {
     done
 
     # remove all OVS bridges created by Neutron
-    for bridge in $(sudo ovs-vsctl list-br | grep -o -e ${OVS_BRIDGE} -e ${PUBLIC_BRIDGE}); do
+    for bridge in $(sudo ovs-vsctl list-br | grep -o -e ${OVS_BRIDGE} -e "${PUBLIC_BRIDGE}"); do
         sudo ovs-vsctl del-br ${bridge}
     done
 }
@@ -55,7 +55,7 @@ function _neutron_ovs_base_install_agent_packages {
 }
 
 function _neutron_ovs_base_configure_debug_command {
-    iniset $NEUTRON_TEST_CONFIG_FILE DEFAULT external_network_bridge $PUBLIC_BRIDGE
+    iniset $NEUTRON_TEST_CONFIG_FILE DEFAULT external_network_bridge "$PUBLIC_BRIDGE"
 }
 
 function _neutron_ovs_base_configure_firewall_driver {
@@ -67,14 +67,16 @@ function _neutron_ovs_base_configure_firewall_driver {
 }
 
 function _neutron_ovs_base_configure_l3_agent {
-    iniset $Q_L3_CONF_FILE DEFAULT external_network_bridge $PUBLIC_BRIDGE
+    iniset $Q_L3_CONF_FILE DEFAULT external_network_bridge "$PUBLIC_BRIDGE"
 
     neutron-ovs-cleanup
     # --no-wait causes a race condition if $PUBLIC_BRIDGE is not up when ip addr flush is called
-    sudo ovs-vsctl -- --may-exist add-br $PUBLIC_BRIDGE
-    sudo ovs-vsctl br-set-external-id $PUBLIC_BRIDGE bridge-id $PUBLIC_BRIDGE
-    # ensure no IP is configured on the public bridge
-    sudo ip addr flush dev $PUBLIC_BRIDGE
+    if [ -n "$PUBLIC_BRIDGE" ]; then
+        sudo ovs-vsctl -- --may-exist add-br $PUBLIC_BRIDGE
+        sudo ovs-vsctl br-set-external-id $PUBLIC_BRIDGE bridge-id $PUBLIC_BRIDGE
+        # ensure no IP is configured on the public bridge
+        sudo ip addr flush dev $PUBLIC_BRIDGE
+    fi
 }
 
 function _neutron_ovs_base_configure_nova_vif_driver {

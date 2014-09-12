@@ -551,6 +551,7 @@ function create_neutron_initial_network {
                 local ext_gw_interface
 
                 if [[ "$Q_USE_PUBLIC_VETH" = "True" ]]; then
+                    sudo ip link delete $Q_PUBLIC_VETH_INT
                     sudo ip link add $Q_PUBLIC_VETH_INT type veth \
                         peer name $Q_PUBLIC_VETH_EX
                     sudo ip link set $Q_PUBLIC_VETH_INT up

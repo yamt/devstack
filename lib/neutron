@@ -560,7 +560,6 @@ function create_neutron_initial_network {
                     ext_gw_interface=$PUBLIC_BRIDGE
                 fi
                 CIDR_LEN=${FLOATING_RANGE#*/}
-                sudo ip addr flush dev $ext_gw_interface
                 sudo ip addr add $EXT_GW_IP/$CIDR_LEN dev $ext_gw_interface
                 sudo ip link set $ext_gw_interface up
                 ROUTER_GW_IP=`neutron port-list -c fixed_ips -c device_owner | grep router_gateway | awk -F '"' '{ print $8; }'`

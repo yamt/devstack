@@ -295,6 +295,9 @@ function configure_tempest {
     iniset $TEMPEST_CONFIG boto build_timeout $BUILD_TIMEOUT
     iniset $TEMPEST_CONFIG boto http_socket_timeout 5
 
+    # Validation
+    iniset $TEMPEST_CONFIG validation run_validation ${TEMPEST_RUN_VALIDATION:-False}
+
     # Identity
     iniset $TEMPEST_CONFIG identity uri "$KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:5000/v2.0/"
     iniset $TEMPEST_CONFIG identity uri_v3 "$KEYSTONE_SERVICE_URI_V3"

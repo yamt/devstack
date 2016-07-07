@@ -142,7 +142,8 @@ VIF_PLUGGING_TIMEOUT=${VIF_PLUGGING_TIMEOUT:-300}
 declare -a Q_PLUGIN_EXTRA_CONF_FILES
 
 
-Q_RR_CONF_FILE=$NEUTRON_CONF_DIR/rootwrap.conf
+Q_RR_CONF_DIR=$NEUTRON_CONF_DIR/rootwrap
+Q_RR_CONF_FILE=$Q_RR_CONF_DIR/rootwrap.conf
 if [[ "$Q_USE_ROOTWRAP" == "False" ]]; then
     Q_RR_COMMAND="sudo"
 else
@@ -289,7 +290,7 @@ set +o xtrace
 
 function _determine_config_server {
     local cfg_file
-    local opts="--config-file $NEUTRON_CONF --config-file /$Q_PLUGIN_CONF_FILE"
+    local opts="--config-dir $NEUTRON_CONF_DIR --config-file /$Q_PLUGIN_CONF_FILE"
     for cfg_file in ${Q_PLUGIN_EXTRA_CONF_FILES[@]}; do
         opts+=" --config-file $cfg_file"
     done
@@ -950,6 +951,7 @@ function _neutron_setup_rootwrap {
 
     # Set up ``rootwrap.conf``, pointing to ``$NEUTRON_CONF_DIR/rootwrap.d``
     # location moved in newer versions, prefer new location
+    sudo install -d -o $STACK_USER $Q_RR_CONF_DIR
     if test -r $NEUTRON_DIR/etc/neutron/rootwrap.conf; then
         sudo install -o root -g root -m 644 $NEUTRON_DIR/etc/neutron/rootwrap.conf $Q_RR_CONF_FILE
     else
